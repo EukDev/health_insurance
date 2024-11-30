@@ -14,6 +14,7 @@
 
 ;; Define an insurance plan for a user
 (define-map insurance-plans principal { coverage-amount: uint, is-active: bool })
+(define-map claims uint { patient: principal, claim-amount: uint, approved: bool })
 
 ;; Define an insurance plan for a user
 (define-public (register-insurance (coverage-amount uint))
@@ -28,6 +29,7 @@
     )
   )
 )
+
 ;; Verify if a user's insurance is active and their coverage amount
 (define-read-only (get-insurance-status (user principal))
   (match (map-get? insurance-plans user)
@@ -53,5 +55,36 @@
         ERR_INSURANCE_NOT_FOUND
       )
     )
+  )
+)
+
+;; Approve a claim by claim ID (only callable by the insurer)
+(define-public (approve-claim (claim-id uint))
+  (begin
+    ;; Check for a valid claim ID (non-zero)
+    (if (<= claim-id u0)
+      ERR_INVALID_CLAIM_ID
+      (let ((claim-data (map-get? claims claim-id)))
+        (match claim-data
+          claim-details
+          (if (is-eq (get patient claim-details) tx-sender)
+            ERR_SELF_APPROVE
+            (begin
+              (map-set claims claim-id { patient: (get patient claim-details), claim-amount: (get claim-amount claim-details), approved: true })
+              (ok "Claim approved")
+            )
+          )
+          ERR_CLAIM_NOT_FOUND
+        )
+      )
+    )
+  )
+)
+
+;; Get claim details
+(define-read-only (get-claim (claim-id uint))
+  (match (map-get? claims claim-id)
+    claim-data (ok claim-data)
+    ERR_CLAIM_NOT_FOUND
   )
 )
