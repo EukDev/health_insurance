@@ -1,0 +1,22 @@
+[project]
+name = "health_insurance_contract"
+authors = []
+description = ""
+telemetry = true
+requirements = []
+[contracts.health_insurance]
+path = "contracts/health_insurance.clar"
+depends_on = []
+
+[repl]
+costs_version = 2
+parser_version = 2
+
+[repl.analysis]
+passes = ["check_checker"]
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
